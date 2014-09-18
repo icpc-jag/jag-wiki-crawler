@@ -1,5 +1,11 @@
 # wrapper for PukiWiki
+
+require 'date'
+require 'mechanize'
+
 class PukiWiki
+  include Enumerable
+
   Page = Struct.new(:name, :uri, :last_modified)
 
   def initialize(uri, encoding = 'UTF-8')
@@ -17,11 +23,11 @@ class PukiWiki
 
   # get the list of pages
   def list()
-    now = DateTime.now
+    today = Date.today
     @agent.get(@uri + '?cmd=list').search('div[@id="body"]/ul/li/ul/li')
       .map {|li| Page.new(li.xpath('./a/text()').to_s, li.xpath('./a/@href').to_s,
-                          (now - li.xpath('./small/text()').to_s.gsub(/^\(|d\)$/, '').to_i).strftime('%Y/%m/%d')) }
-  end
+                          (today - li.xpath('./small/text()').to_s.gsub(/^\(|d\)$/, '').to_i).strftime('%Y/%m/%d')) }
+  end ## XXX: any better way to obtain precise last-modified time?
 
   def each(&block)
     list.each(&block)
