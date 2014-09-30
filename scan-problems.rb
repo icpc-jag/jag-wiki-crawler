@@ -11,13 +11,17 @@ require 'google_drive'
 
 require_relative 'lib/pukiwiki'
 
+# s: date-like string
+def normalize_date(s) 
+  s.gsub(/\s/, '').gsub(%r{(\d{4})[年/](\d{1,2})月?}) { "#{$1}年#{$2.rjust(2, '0')}月" }
+end
+
 def extract_metadata(source)
   if source =~ /tag:/ or (source =~ /難度/ and source =~ /分野/)
     return {
       'Author' => source.scan(/投稿\s*[:：]\s*(.*?)\s*$/).flatten.join(';'),
       'Source' => source.scan(/出典\s*[:：]\s*(.*?)\s*$/).flatten.join(';'),
-      'Date' => source.scan(/時期\s*[:：]\s*(.*?)\s*$/).flatten
-        .map {|s| s.gsub(%r{(\d{4})\s*/\s*(\d{1,2})}, '\1年\2月') }.join(''),
+      'Date' => source.scan(/時期\s*[:：]\s*(.*?)\s*$/).flatten.map(method(:normalize_date)).join(''),
       'Genre' => source.scan(/tag:genre:([a-z]+)/).flatten.sort.join(';'),
       'Difficulty' => source.scan(/tag:diff:([a-z]+)/).flatten.sort.join(';'),
       'Target' => source.scan(/tag:target:([a-z]+)/).flatten.sort.join(';')
