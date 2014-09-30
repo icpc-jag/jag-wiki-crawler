@@ -12,8 +12,8 @@ require 'google_drive'
 require_relative 'lib/pukiwiki'
 
 # s: date-like string
-def normalize_date(s) 
-  s.gsub(/\s/, '').gsub(%r{(\d{4})[年/](\d{1,2})月?}) { "#{$1}年#{$2.rjust(2, '0')}月" }
+def normalize_date(s)
+  s.tr('０-９', '0-9').gsub(%r{(\d{4})\s*[年/]\s*(\d{1,2})\s*月?}) { "#{$1}年#{$2.rjust(2, '0')}月" }
 end
 
 def extract_metadata(source)
