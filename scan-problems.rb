@@ -21,7 +21,7 @@ def extract_metadata(source)
     return {
       'Author' => source.scan(/投稿\s*[:：]\s*(.*?)\s*$/).flatten.join(';'),
       'Source' => source.scan(/出典\s*[:：]\s*(.*?)\s*$/).flatten.join(';'),
-      'Date' => source.scan(/時期\s*[:：]\s*(.*?)\s*$/).flatten.map(method(:normalize_date)).join(''),
+      'Date' => source.scan(/時期\s*[:：]\s*(.*?)\s*$/).flatten.map(&method(:normalize_date)).join(''),
       'Genre' => source.scan(/tag:genre:([a-z]+)/).flatten.sort.join(';'),
       'Difficulty' => source.scan(/tag:diff:([a-z]+)/).flatten.sort.join(';'),
       'Target' => source.scan(/tag:target:([a-z]+)/).flatten.sort.join(';')
@@ -57,6 +57,6 @@ pukiwiki.select {|page| page.name =~ %r{^(?:未推薦|推薦|未解決|使用済
 
     ws.synchronize if ws.dirty?
   rescue => e
-    puts "...failed: #{e}"
+    puts "...failed: #{e} at #{e.backtrace.join(' from ')}"
   end
 end
