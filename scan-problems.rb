@@ -4,6 +4,7 @@
 require 'pathname'
 require 'uri'
 require 'yaml'
+require 'optparse'
 
 require 'rubygems'
 require 'bundler/setup'
@@ -28,6 +29,10 @@ def extract_metadata(source)
     }
   end
 end
+
+params = ARGV.getopts(nil, 'dryrun', 'verbose')
+dryrun = params['dryrun']
+verbose = params['verbose']
 
 config = YAML.load_file(Pathname(__FILE__).dirname + 'config.yml')
 
@@ -55,7 +60,7 @@ pukiwiki.select {|page| page.name =~ %r{^(?:未推薦|推薦|未解決|使用済
       puts "Ill-formed problem page: #{page.name}"
     end
 
-    ws.synchronize if ws.dirty?
+    ws.synchronize if !dryrun and ws.dirty?
   rescue => e
     puts "...failed: #{e} at #{e.backtrace.join(' from ')}"
   end
