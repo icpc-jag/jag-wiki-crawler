@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
+require 'optparse'
 require 'pathname'
 require 'uri'
 require 'yaml'
-require 'optparse'
 
 require 'rubygems'
 require 'bundler/setup'
@@ -36,8 +36,13 @@ verbose = params['verbose']
 
 config = YAML.load_file(Pathname(__FILE__).dirname + 'config.yml')
 
+cred_store = Pathname(__FILE__).dirname + 'credentials.json'
+auth = Signet::OAuth2::Client.new(open(cred_store) {|f| JSON.parse(f.read) })
+auth.refresh!
+open(Pathname(__FILE__).dirname + 'credentials.json', 'w', 0600) {|f| f.write(auth.to_json) }
+
 pukiwiki = PukiWiki.new(config[:pukiwiki][:location]).login(config[:pukiwiki][:username], config[:pukiwiki][:password])
-gdrive = GoogleDrive.login(config[:gdrive][:username], config[:gdrive][:password])
+gdrive = GoogleDrive.login_with_oauth(auth.access_token)
 ws = gdrive.spreadsheet_by_key(config[:gdrive][:workbook]).worksheets.find {|ws| ws.title = 'Problems' }
 
 pukiwiki.select {|page| page.name =~ %r{^(?:未推薦|推薦|未解決|使用済み|棄却済み)問題/[^/]+$} }.each do |page|
@@ -62,6 +67,6 @@ pukiwiki.select {|page| page.name =~ %r{^(?:未推薦|推薦|未解決|使用済
 
     ws.synchronize if !dryrun and ws.dirty?
   rescue => e
-    puts "...failed: #{e} at #{e.backtrace.join(' from ')}"
+    $stderr.puts "...failed: #{e} at #{e.backtrace.join(' from ')}"
   end
 end
