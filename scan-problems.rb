@@ -43,7 +43,7 @@ open(Pathname(__FILE__).dirname + 'credentials.json', 'w', 0600) {|f| f.write(au
 
 pukiwiki = PukiWiki.new(config[:pukiwiki][:location]).login(config[:pukiwiki][:username], config[:pukiwiki][:password])
 gdrive = GoogleDrive.login_with_oauth(auth.access_token)
-ws = gdrive.spreadsheet_by_key(config[:gdrive][:workbook]).worksheets.find {|ws| ws.title = 'Problems' }
+ws = gdrive.spreadsheet_by_key(config[:gdrive][:workbook]).worksheets.find {|ws| ws.title == 'Problems' }
 
 pukiwiki.select {|page| page.name =~ %r{^(?:未推薦|推薦|未解決|使用済み|棄却済み)問題/[^/]+$} }.each do |page|
   status, title = page.name.split('/', 2)
