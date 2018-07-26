@@ -6,8 +6,9 @@ require 'pathname'
 require 'uri'
 require 'yaml'
 
-require 'rubygems'
 require 'bundler/setup'
+require 'googleauth'
+require 'googleauth/stores/file_token_store'
 require 'google_drive'
 
 require_relative 'lib/pukiwiki'
@@ -25,7 +26,7 @@ def extract_metadata(source)
       'Date' => source.scan(/時期\s*[:：]\s*(.*?)\s*$/).flatten.map(&method(:normalize_date)).join(''),
       'Genre' => source.scan(/tag:genre:([a-z]+)/).flatten.sort.join(';'),
       'Difficulty' => source.scan(/tag:diff:([a-z]+)/).flatten.sort.join(';'),
-      'Target' => source.scan(/tag:target:([a-z]+)/).flatten.sort.join(';')
+      'Target' => source.scan(/tag:target:([a-z]+)/).flatten.sort.join(';'),
     }
   end
 end
@@ -34,15 +35,16 @@ params = ARGV.getopts(nil, 'dryrun', 'verbose')
 dryrun = params['dryrun']
 verbose = params['verbose']
 
-config = YAML.load_file(Pathname(__FILE__).dirname + 'config.yml')
+config = YAML.load_file(Pathname(__dir__) + 'config.yml')
 
-cred_store = Pathname(__FILE__).dirname + 'credentials.json'
-auth = Signet::OAuth2::Client.new(open(cred_store) {|f| JSON.parse(f.read) })
-auth.refresh!
-open(Pathname(__FILE__).dirname + 'credentials.json', 'w', 0600) {|f| f.write(auth.to_json) }
+scopes = %w[https://www.googleapis.com/auth/drive https://spreadsheets.google.com/feeds]
+client_id = Google::Auth::ClientId.from_file(Pathname(__dir__) + 'client_secrets.json')
+token_store = Google::Auth::Stores::FileTokenStore.new(file: Pathname(__dir__) + 'token.yml')
+authorizer = Google::Auth::UserAuthorizer.new(client_id, scopes, token_store)
+token = authorizer.get_credentials('default').fetch_access_token!
 
 pukiwiki = PukiWiki.new(config[:pukiwiki][:location]).login(config[:pukiwiki][:username], config[:pukiwiki][:password])
-gdrive = GoogleDrive.login_with_oauth(auth.access_token)
+gdrive = GoogleDrive.login_with_oauth(token['access_token'])
 ws = gdrive.spreadsheet_by_key(config[:gdrive][:workbook]).worksheets.find {|ws| ws.title == 'Problems' }
 
 pukiwiki.select {|page| page.name =~ %r{^(?:未推薦|推薦|未解決|使用済み|棄却済み)問題/[^/]+$} }.each do |page|

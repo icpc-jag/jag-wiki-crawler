@@ -2,18 +2,23 @@
 
 require 'pathname'
 
-require 'rubygems'
 require 'bundler/setup'
-require 'google/api_client'
+require 'googleauth'
+require 'googleauth/stores/file_token_store'
 
-auth = Google::APIClient::ClientSecrets.load(Pathname(__FILE__).dirname).to_authorization
-auth.scope = %[https://www.googleapis.com/auth/drive https://spreadsheets.google.com/feeds]
+OOB_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
-print("1. Open this page:\n#{auth.authorization_uri}\n\n")
-print("2. Enter the authorization code shown in the page: ")
-auth.code = $stdin.gets.chomp
-auth.fetch_access_token!
+scopes = %w[https://www.googleapis.com/auth/drive https://spreadsheets.google.com/feeds]
+client_id = Google::Auth::ClientId.from_file(Pathname(__dir__) + 'client_secrets.json')
+token_store = Google::Auth::Stores::FileTokenStore.new(file: Pathname(__dir__) + 'token.yml')
+authorizer = Google::Auth::UserAuthorizer.new(client_id, scopes, token_store)
 
-open(Pathname(__FILE__).dirname + 'credentials.json', 'w', 0600) {|f| f.write(auth.to_json) }
+user_id = 'default'
 
-puts("Done!")
+unless authorizer.get_credentials(user_id)
+  url = authorizer.get_authorization_url(base_url: OOB_URI)
+  print("1. Open this page:\n#{url}\n\n")
+  print("2. Enter the authorization code shown in the page: ")
+  code = $stdin.gets.chomp
+  credentials = authorizer.get_and_store_credentials_from_code(user_id: user_id, code: code, base_url: OOB_URI)
+end

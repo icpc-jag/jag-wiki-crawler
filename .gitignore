@@ -1,5 +1,5 @@
 /config.yml
 /client_secrets.json
-/credentials.json
+/token.yml
 /.bundle/
 
