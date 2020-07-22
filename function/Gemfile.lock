@@ -1,11 +1,3 @@
-GIT
-  remote: https://github.com/hanazuki/googleauth-ssm_token_store.git
-  revision: 5bd99336f3cdf435bede45ca769b17e6d146f0cf
-  specs:
-    googleauth-ssm_token_store (0.0.0)
-      aws-sdk-ssm
-      googleauth
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -101,7 +93,6 @@ PLATFORMS
 DEPENDENCIES
   aws-sdk-ssm
   google_drive
-  googleauth-ssm_token_store!
   mechanize
 
 BUNDLED WITH
