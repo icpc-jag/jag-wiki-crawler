@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  jag-wiki-crawler
+
+Parameters:
+  SpreadsheetID:
+    Type: String
+    Description: Document ID of target Google spreadsheet
+
+Resources:
+  CrawlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: function/
+      Handler: handler.main
+      Runtime: ruby2.7
+      MemorySize: 512
+      Timeout: 10
+      Environment:
+        Variables:
+          SPREADSHEET_ID: {Ref: SpreadsheetID}
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource:
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/jag-maintenance/*
+      Events:
+        Cron:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)

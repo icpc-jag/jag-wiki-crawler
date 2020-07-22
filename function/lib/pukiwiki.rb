@@ -2,6 +2,7 @@
 
 require 'date'
 require 'mechanize'
+require 'uri'
 
 class PukiWiki
   include Enumerable
@@ -36,6 +37,12 @@ class PukiWiki
   # get the source code of a page
   def get(name)
     name = name.name if name.is_a?(Page)
-    @agent.get(@uri + "?cmd=source&page=#{URI::escape(name.encode(@encoding)).gsub('+','%2B')}").at('#source').text
+    @agent.get(@uri + "?cmd=source&page=#{escape(name)}").at('#source').text
+  end
+
+  private
+
+  def escape(s)
+    URI.encode_www_form_component(s.encode(@encoding))
   end
 end
