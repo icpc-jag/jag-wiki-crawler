@@ -16,7 +16,7 @@ Resources:
       Handler: handler.main
       Runtime: ruby2.7
       MemorySize: 512
-      Timeout: 10
+      Timeout: 60
       Environment:
         Variables:
           SPREADSHEET_ID: {Ref: SpreadsheetID}
