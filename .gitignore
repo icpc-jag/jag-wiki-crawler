@@ -1,5 +1,3 @@
-/config.yml
-/client_secrets.json
-/token.yml
 /.bundle/
-
+/.aws-sam/
+samconfig.toml
