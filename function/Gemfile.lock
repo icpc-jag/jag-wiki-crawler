@@ -15,6 +15,7 @@ GEM
       aws-sigv4 (~> 1.1)
     aws-sigv4 (1.2.4)
       aws-eventstream (~> 1, >= 1.0.2)
+    base64 (0.3.0)
     connection_pool (2.2.5)
     declarative (0.0.20)
     domain_name (0.5.20190701)
@@ -71,7 +72,8 @@ GEM
       domain_name (~> 0.5)
     httpclient (2.8.3)
     jmespath (1.6.1)
-    jwt (2.2.3)
+    jwt (2.10.3)
+      base64
     mechanize (2.8.5)
       addressable (~> 2.8)
       domain_name (~> 0.5, >= 0.5.20190701)
